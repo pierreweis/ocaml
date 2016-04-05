@@ -724,9 +724,24 @@ and pp_open_hovbox state indent = pp_open_box_gen state indent Pp_hovbox
 and pp_open_box state indent = pp_open_box_gen state indent Pp_box
 ;;
 
-(* Printing all queued text.
-   [print_newline] prints a new line after flushing the queue.
-   [print_flush] on flush the queue without adding a newline. *)
+(* Printing queued text.
+
+  [pp_print_queue] flushes the formatter queue, printing all pending text,
+  closing all open boxes and resetting the formatter argument to initial
+  state. However, the low level output device of the formatter is not
+  flushed.
+
+  [pp_print_flush] behaves as [pp_print_queue] and then flushes the the low
+  level output device of the formatter to effectively display printing
+  material.
+
+  [pp_print_newline] behaves as [pp_print_flush] after printing an additional
+  new line. *)
+
+let pp_print_queue state () =
+  pp_flush_queue state false
+;;
+
 let pp_print_newline state () =
   pp_flush_queue state true; state.pp_out_flush ()
 and pp_print_flush state () =
@@ -898,9 +913,6 @@ let pp_get_formatter_output_functions state () =
   (state.pp_out_string, state.pp_out_flush)
 ;;
 
-let pp_flush_formatter state =
-  pp_flush_queue state false
-
 (* The default function to output new lines. *)
 let display_newline state () = state.pp_out_string "\n" 0  1;;
 
@@ -1052,6 +1064,7 @@ and print_break = pp_print_break std_formatter
 and print_cut = pp_print_cut std_formatter
 and print_space = pp_print_space std_formatter
 and force_newline = pp_force_newline std_formatter
+and print_queue = pp_print_queue std_formatter
 and print_flush = pp_print_flush std_formatter
 and print_newline = pp_print_newline std_formatter
 and print_if_newline = pp_print_if_newline std_formatter

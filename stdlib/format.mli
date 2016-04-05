@@ -159,13 +159,6 @@ val print_break : int -> int -> unit
   the current indentation.
 *)
 
-val print_flush : unit -> unit
-(** Flushes the pretty printer: all opened boxes are closed,
-  and all pending text is displayed. *)
-
-val print_newline : unit -> unit
-(** Equivalent to [print_flush] followed by a new line. *)
-
 val force_newline : unit -> unit
 (** Forces a new line in the current box.
   Not the normal way of pretty-printing, since the new line does not reset
@@ -176,6 +169,25 @@ val print_if_newline : unit -> unit
 (** Executes the next formatting command if the preceding line
   has just been split. Otherwise, ignore the next formatting
   command. *)
+
+(** {6 Flushing pretty-printing} *)
+
+val print_flush : unit -> unit
+(** Flushes the pretty printer: all opened boxes are closed,
+  and all pending text is displayed (since the pretty printer low level output
+  device is flushed). *)
+
+val print_newline : unit -> unit
+(** Equivalent to [print_flush] followed by a new line. *)
+
+val print_queue : unit -> unit
+(** Equivalent to [print_flush] except that pending text may not be
+  completely displayed (since the pretty printer low level output device is
+  not flushed). Only useful when repeatedly flushing the output device is too
+  much slowing down computation.
+
+  @since 4.03.0
+*)
 
 (** {6 Margin} *)
 
@@ -523,6 +535,7 @@ val pp_print_break : formatter -> int -> int -> unit
 val pp_print_cut : formatter -> unit -> unit
 val pp_print_space : formatter -> unit -> unit
 val pp_force_newline : formatter -> unit -> unit
+val pp_print_queue : formatter -> unit -> unit
 val pp_print_flush : formatter -> unit -> unit
 val pp_print_newline : formatter -> unit -> unit
 val pp_print_if_newline : formatter -> unit -> unit
@@ -565,14 +578,6 @@ val pp_get_formatter_out_functions :
    evaluation of these primitives. For instance,
    [print_string] is equal to [pp_print_string std_formatter]. *)
 
-val pp_flush_formatter : formatter -> unit
-(** [pp_flush_formatter fmt] flushes [fmt]'s internal queue, ensuring that all
-    the printing and flushing actions have been performed. In addition, this
-    operation will close all boxes and reset the state of the formatter.
-
-    This will not flush [fmt]'s output. In most cases, the user may want to use
-    {!pp_print_flush} instead. *)
-
 (** {6 Convenience formatting functions.} *)
 
 val pp_print_list:
@@ -588,7 +593,7 @@ val pp_print_list:
 
 val pp_print_text : formatter -> string -> unit
 (** [pp_print_text ppf s] prints [s] with spaces and newlines
-  respectively printed with {!pp_print_space} and
+  respectively printed using {!pp_print_space} and
   {!pp_force_newline}.
 
   @since 4.02.0
