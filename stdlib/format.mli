@@ -276,21 +276,6 @@ val print_newline : unit -> unit
   using break hints within a vertical pretty-printing box.
 *)
 
-val print_queue : unit -> unit
-(** End of pretty-printing: resets the pretty-printer state to initial state.
-  All open pretty-printing boxes are closed, all pending text is printed.
-
-  Equivalent to {!print_flush} except that pending text may not be completely
-  displayed since [print_queue] does not flush the pretty-printer low level
-  output device.
-  See corresponding words of caution for {!print_flush}.
-
-  Note: only useful when repeatedly flushing the output device is
-  too much slowing down computation.
-
-  @since 4.03.0
-*)
-
 (** {6 Margin} *)
 
 val set_margin : int -> unit
@@ -654,19 +639,19 @@ val formatter_of_out_functions :
 (**
   Symbolic pretty-printing is pretty-printing with no low level output.
   When using a symbolic formatter, all regular pretty-printing activities
-  occur but output material is symbolic and recorded in a buffer of output
-  items. Flushing the buffer allows post-processing of output before low
-  level output operations.
+  occur but output material is symbolic and stored in a buffer of output
+  items. At the end of pretty-printing, flushing the output buffer allows
+  post-processing of symbolic output before low level output operations.
 *)
 
-type formatter_output_item =
+type symbolic_output_item =
   | Output_flush
   | Output_newline
   | Output_string of string
   | Output_spaces of int
   | Output_indent of int
 (**
-  The output items that symbolic pretty-printers would record:
+  The output items that symbolic pretty-printers will produce:
   - [Output_flush]: symbolic flush command.
   - [Output_newline]: symbolic newline command.
   - [Output_string s]: symbolic output for string [s].
@@ -674,36 +659,40 @@ type formatter_output_item =
   - [Output_indent i]: symbolic indentation of size [i].
 *)
 
-type formatter_output_buffer = {
-  mutable formatter_output_contents : formatter_output_item list;
+type symbolic_output_buffer = {
+  mutable symbolic_output_contents : symbolic_output_item list;
 }
 (**
-  The output buffer of a symbolic formatter.
+  The output buffer of a symbolic pretty-printer.
 *)
 
-val make_formatter_output_buffer : unit -> formatter_output_buffer
-(** [make_formatter_output_buffer ()] returns a fresh [formatter_output_buffer] buffer. *)
+val make_symbolic_output_buffer : unit -> symbolic_output_buffer
+(** [make_symbolic_output_buffer ()] returns a fresh buffer for
+  symbolic output. *)
 
-val clear_formatter_output_buffer : formatter_output_buffer -> unit
-(** [clear_formatter_output_buffer fo] resets [formatter_output_buffer] [fo]. *)
+val clear_symbolic_output_buffer : symbolic_output_buffer -> unit
+(** [clear_symbolic_output_buffer sob] resets buffer [sob]. *)
 
-val get_formatter_output_buffer : formatter_output_buffer -> formatter_output_item list
-(** [get_formatter_output_buffer fo] returns the contents of [formatter_output_buffer] [fo]. *)
+val get_symbolic_output_buffer :
+  symbolic_output_buffer -> symbolic_output_item list
+(** [get_symbolic_output_buffer sob] returns the contents of buffer [sob]. *)
 
-val flush_formatter_output_buffer : formatter_output_buffer -> formatter_output_item list
-(** [flush_formatter_output_buffer fo] clears buffer [fo] and returns its contents.
-  [flush_formatter_output_buffer fo] is equivalent to
-  [let fois = get_formatter_output_buffer fo in clear_formatter_output_buffer fo; fois]
+val flush_symbolic_output_buffer :
+  symbolic_output_buffer -> symbolic_output_item list
+(** [flush_symbolic_output_buffer sob] clears buffer [sob] and returns its
+  contents.
+  [flush_symbolic_output_buffer sob] is equivalent to
+  [let items = get_symbolic_output_buffer sob in
+   clear_symbolic_output_buffer sob; items]
 *)
 
-val add_formatter_output_item :
-  formatter_output_buffer -> formatter_output_item -> unit
-(** [add_formatter_output_item fo it] adds item [it] to
-  [formatter_output_buffer] [fo]. *)
+val add_symbolic_output_item :
+  symbolic_output_buffer -> symbolic_output_item -> unit
+(** [add_symbolic_output_item sob itm] adds item [itm] to buffer [sob]. *)
 
-val formatter_of_formatter_output_buffer : formatter_output_buffer -> formatter
-(** [formatter_of_formatter_output_buffer fo] returns a symbolic formatter
-  that outputs to [formatter_output_buffer] [fo]. *)
+val formatter_of_symbolic_output_buffer : symbolic_output_buffer -> formatter
+(** [formatter_of_symbolic_output_buffer sob] returns a symbolic formatter
+  that outputs to [symbolic_output_buffer] [sob]. *)
 
 (** {6 Basic functions to use with formatters} *)
 
@@ -725,7 +714,6 @@ val pp_print_break : formatter -> int -> int -> unit
 val pp_print_cut : formatter -> unit -> unit
 val pp_print_space : formatter -> unit -> unit
 val pp_force_newline : formatter -> unit -> unit
-val pp_print_queue : formatter -> unit -> unit
 val pp_print_flush : formatter -> unit -> unit
 val pp_print_newline : formatter -> unit -> unit
 val pp_print_if_newline : formatter -> unit -> unit
