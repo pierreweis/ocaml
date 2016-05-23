@@ -25,6 +25,7 @@ type compile_time_constant =
   | Ostype_unix
   | Ostype_win32
   | Ostype_cygwin
+  | Backend_type
 
 type loc_kind =
   | Loc_FILE
@@ -430,11 +431,7 @@ let iter f = function
       f e
 
 
-module IdentSet =
-  Set.Make(struct
-    type t = Ident.t
-    let compare = compare
-  end)
+module IdentSet = Set.Make(Ident)
 
 let free_ids get l =
   let fv = ref IdentSet.empty in

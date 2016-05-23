@@ -20,7 +20,9 @@ module type Common_options = sig
   val _absname : unit -> unit
   val _I : string -> unit
   val _labels : unit -> unit
+  val _alias_deps : unit -> unit
   val _no_alias_deps : unit -> unit
+  val _app_funct : unit -> unit
   val _no_app_funct : unit -> unit
   val _noassert : unit -> unit
   val _nolabels : unit -> unit
@@ -98,6 +100,17 @@ module type Compiler_options = sig
 end
 ;;
 
+module type Toplevel_options = sig
+  include Common_options
+  val _init : string -> unit
+  val _noinit : unit -> unit
+  val _no_version : unit -> unit
+  val _noprompt : unit -> unit
+  val _nopromptcont : unit -> unit
+  val _stdin : unit -> unit
+end
+;;
+
 module type Bytecomp_options = sig
   include Common_options
   include Compiler_options
@@ -116,13 +129,7 @@ module type Bytecomp_options = sig
 end;;
 
 module type Bytetop_options = sig
-  include Common_options
-  val _init : string -> unit
-  val _noinit : unit -> unit
-  val _noprompt : unit -> unit
-  val _nopromptcont : unit -> unit
-  val _stdin : unit -> unit
-
+  include Toplevel_options
   val _dinstr : unit -> unit
 end;;
 
@@ -188,14 +195,9 @@ module type Optcomp_options = sig
 end;;
 
 module type Opttop_options = sig
-  include Common_options
+  include Toplevel_options
   include Optcommon_options
-  val _init : string -> unit
-  val _noinit : unit -> unit
-  val _noprompt : unit -> unit
-  val _nopromptcont : unit -> unit
   val _S : unit -> unit
-  val _stdin : unit -> unit
 end;;
 
 module type Ocamldoc_options = sig

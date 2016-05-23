@@ -1361,6 +1361,15 @@ let rec type_pat ~constrs ~labels ~no_existentials ~mode ~explode ~env
       unify_pat_types loc !env ty expected_ty;
       k { p with pat_extra =
         (Tpat_type (path, lid), loc, sp.ppat_attributes) :: p.pat_extra }
+  | Ppat_open (lid,p) ->
+      let path, new_env =
+        !type_open Asttypes.Fresh !env sp.ppat_loc lid in
+      let new_env = ref new_env in
+      type_pat ~env:new_env p expected_ty ( fun p ->
+        env := Env.copy_local !env ~from:!new_env;
+        k { p with pat_extra =( Tpat_open (path,lid,!new_env),
+                            loc, sp.ppat_attributes) :: p.pat_extra }
+      )
   | Ppat_exception _ ->
       raise (Error (loc, !env, Exception_pattern_below_toplevel))
   | Ppat_extension ext ->
@@ -1810,6 +1819,7 @@ let iter_ppat f p =
   | Ppat_variant (_, arg) | Ppat_construct (_, arg) -> may f arg
   | Ppat_tuple lst ->  List.iter f lst
   | Ppat_exception p | Ppat_alias (p,_)
+  | Ppat_open (_,p)
   | Ppat_constraint (p,_) | Ppat_lazy p -> f p
   | Ppat_record (args, _flag) -> List.iter (fun (_,p) -> f p) args
 
@@ -1822,18 +1832,21 @@ let contains_polymorphic_variant p =
   try loop p; false with Exit -> true
 
 let contains_gadt env p =
-  let rec loop p =
+  let rec loop env p =
     match p.ppat_desc with
-      Ppat_construct (lid, _) ->
+      | Ppat_construct (lid, _) ->
         begin try
           let cstrs = Env.lookup_all_constructors lid.txt env in
           List.iter (fun (cstr,_) -> if cstr.cstr_generalized then raise Exit)
             cstrs
         with Not_found -> ()
-        end; iter_ppat loop p
-    | _ -> iter_ppat loop p
+        end; iter_ppat (loop env) p
+      | Ppat_open (lid,sub_p) ->
+        let _, new_env = !type_open Asttypes.Fresh env p.ppat_loc lid in
+        loop new_env sub_p
+    | _ -> iter_ppat (loop env) p
   in
-  try loop p; false with Exit -> true
+  try loop env p; false with Exit -> true
 
 let check_absent_variant env =
   iter_pattern
@@ -1945,7 +1958,7 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected =
         | false, Rejected, _
           -> ()
         | true, Rejected, _
-        | false, Required, Tvar _ ->
+        | false, Required, (Tvar _ | Tconstr _) ->
             raise (Error (loc, env, Inlined_record_escape))
         | false, Required, _  ->
             () (* will fail later *)
@@ -2424,8 +2437,9 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected =
           (Texp_constraint cty, loc, sexp.pexp_attributes) :: arg.exp_extra;
       }
   | Pexp_coerce(sarg, sty, sty') ->
-      (* Could be always true, only 1% slowdown for lablgtk *)
-      let separate = !Clflags.principal || Env.has_local_constraints env in
+      let separate = true in (* always separate, 1% slowdown for lablgtk *)
+      (* Also see PR#7199 for a problem with the following:
+         let separate = !Clflags.principal || Env.has_local_constraints env in*)
       let (arg, ty',cty,cty') =
         match sty with
         | None ->

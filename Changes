@@ -3,35 +3,71 @@ OCaml 4.04.0:
 
 (Changes that can break existing programs are marked with a "*")
 
-Language features:
-==================
+### Language features:
+
+- GPR#187, GPR#578: Local opening of modules in a pattern.
+  Syntax: "M.(p)", "M.[p]","M.[| p |]", "M.{p}"
+  (Florian Angeletti, Jacques Garrigue, review by Alain Frisch)
 
 - GPR#301: local exception declarations "let exception ... in"
   (Alain Frisch)
 
-Compilers:
-==========
+### Compilers:
 
 - PR#7023, GPR#336: Better unboxing strategy
   (Alain Frisch, Pierre Chambart)
+- PR#7200, GPR#539: Improve, fix, and add test for parsing/pprintast.ml
+  (Runhang Li, David Sheets, Alain Frisch)
 
-Tools:
-======
+- GPR#580: Optimize immutable float records
+  (Pierre Chambart, review by Marc Shinwell)
 
-- GPR#452: Make the output of ocamldep is more stable
+### Language tooling and user interface
+
+- PR#7139: clarify the wording of Warning 38
+  (Unused exception or extension constructor)
+  (Gabriel Scherer)
+
+### Tools:
+
+- GPR#452: Make the output of ocamldep more stable
   (Alain Frisch)
+- MPR#7248: have ocamldep interpret -open arguments in left-to-right order
+  (Gabriel Scherer, report by Anton Bachin)
 
-Standard library:
-=================
+- Add the -no-version option to the toplevel
+  (Sébastien Hinderer)
+
+### Standard library:
+
+- GPR#427: Obj.is_block is now an inlined OCaml function instead of a
+  C external.  This should be faster.
+  (Demi Obenour)
 
 - PR#4747, GPR#328: Optimize Hashtbl by using in-place updates of its
   internal bucket lists.  All operations run in constant stack size
   and are usually faster, except Hashtbl.copy which can be much
-  slower.
+  slower
   (Alain Frisch)
+  
+- PR#6279, GPR#553: implement Set.map
+  (Gabriel Scherer)
 
-Build system:
-=============
+- GPR#473: Provide `Sys.backend_type` so that user can write backend-specific
+  code in some cases (for example,  code generator).
+  (Hongbo Zhang)
+
+- PR#6820, GPR#560: Add Obj.reachable_words to compute the
+  "transitive" heap size of a value
+  (Alain Frisch, review by Marc Shinwell and Damien Doligez)
+
+### Manual:
+
+- PR#7245, GPR#565: clarification to the wording and documentation
+  of Warning 52 (fragile constant pattern)
+  (Gabriel Scherer, William, Adrien Nader, Jacques Garrigue)
+
+### Build system:
 
 - GPR#324: Compiler developpers only: Adding new primitives to the
   standard runtime doesn't require anymore to run `make bootstrap`
@@ -46,29 +82,28 @@ Build system:
 - GPR#507: More sharing between Unix and Windows makefiles
   (whitequark, review by Alain Frisch)
 
-Bug fixes:
-==========
+### Bug fixes:
 
 - PR#7112: Aliased arguments ignored for equality of module types
 
-Other libraries:
-================
+### Other libraries:
 
 * GPR#533: Thread library: fixed [Thread.wait_signal] so that it
   converts back the signal number returned by [sigwait] to an
   OS-independent number
   (Jérémie Dimino)
 
-===============================================================================
-===============================================================================
+### Documentation:
 
-OCaml 4.03.0:
--------------
+- PR#7243: warn users against using WinZip to unpack the source archive
+  (Damien Doligez, report by Shayne Fletcher)
+
+OCaml 4.03.0 (25 Apr 2016):
+---------------------------
 
 (Changes that can break existing programs are marked with a "*")
 
-Language features:
-==================
+### Language features:
 
 - PR#5528: inline records for constructor arguments
   (Alain Frisch)
@@ -167,8 +202,7 @@ Language features:
   not to the expression.
   (Gabriel Radanne)
 
-Compilers:
-==========
+### Compilers:
 
 * PR#4231, PR#5461: warning 31 is now fatal by default
   (Warning 31: A module is linked twice in the same executable.)
@@ -331,18 +365,17 @@ Compilers:
 - GPR#455: provide more debugging information to Js_of_ocaml
   (Jérôme Vouillon)
 
-- GPR#514: Added several command-line flags to explicitly enable
+- GPR#514, GPR#554: Added several command-line flags to explicitly enable
   settings that are currently the default:
-  `-no-keep-docs`, `-no-keep-locs`, `-no-principal`,
-  `-no-rectypes`, `-no-strict-formats`
+  `-alias-deps`, `-app-funct`, `-no-keep-docs`, `-no-keep-locs`,
+  `-no-principal`, `-no-rectypes`, `-no-strict-formats`
   (Demi Obenour)
 
 - GPR#545: use reraise to preserve backtrace on
   `match .. with exception e -> raise e`
   (Nicolas Ojeda Bar, review by Gabriel Scherer)
 
-Runtime system:
-===============
+### Runtime system:
 
 - PR#3612, PR#92: allow allocating custom block with finalizers
   in the minor heap.
@@ -382,13 +415,14 @@ Runtime system:
 - GPR#262: Multiple GC roots per compilation unit
   (Pierre Chambart, Mark Shinwell, review by Damien Doligez)
 
-- GPR#297: Several changes to improve the worst-case GC pause time.
-  (Damien Doligez, with help from Leo White and Francois Bobot)
+* GPR#297: Several changes to improve the worst-case GC pause time.
+  Changes Gc.control and Gc.major_slice and adds functions to the Gc module.
+  (Damien Doligez, with help from Francois Bobot, Thomas Braibant, Leo White)
 
 - GPR#325: Add v=0x400 flag to OCAMLRUNPARAM to display GC stats on exit
   (Louis Gesbert, review by Alain Frisch)
 
-Standard library:
+### Standard library:
 
 - PR#1460, GPR#230: Array.map2, Array.iter2
   (John Christopher McAlpine)
@@ -512,8 +546,7 @@ Standard library:
 - GPR#356: Add [Format.kasprintf]
   (Jérémie Dimino, Mark Shinwell)
 
-Type system:
-============
+### Type system:
 
 - PR#5545: Type annotations on methods cannot control the choice of abbreviation
   (Jacques Garrigue)
@@ -527,8 +560,7 @@ Type system:
 - PR#6593: Functor application in tests/basic-modules fails after commit 15405
   (Jacques Garrigue)
 
-Toplevel and debugger:
-======================
+### Toplevel and debugger:
 
 - PR#6113: Add descriptions to directives, and display them via #help
   (Nick Giannarakis, Berke Durak, Francis Southern and Gabriel Scherer)
@@ -563,8 +595,7 @@ Toplevel and debugger:
 - PR#7119: the toplevel does not respect [@@@warning]
   (Alain Frisch, report by Gabriel Radanne)
 
-Other libraries:
-================
+### Other libraries:
 
 * Unix library: channels created by Unix.in_channel_of_descr or
   Unix.out_channel_of_descr no longer support text mode under Windows.
@@ -610,14 +641,16 @@ Other libraries:
     "end of line" means for "^" and "$" regexps.
   (Xavier Leroy, question by Fredrik Lindgren)
 
-OCamldep:
-=========
+- PR#7209: do not run at_exit handlers in [Unix.create_process] and
+  similar functions when the [exec] call fails in the child process
+  (Jérémie Dimino)
+
+### OCamldep:
 
 - GPR#286: add support for module aliases
   (Jacques Garrigue)
 
-Manual:
-=======
+### Manual:
 
 - GPR#302: The OCaml reference manual is now included in the manual/
   subdirectory of the main OCaml source repository. Contributions to
@@ -630,14 +663,23 @@ Manual:
 - PR#6676: ongoing simplification of the "Language Extensions" section
   (Alain Frisch, John Whitington)
 
+- PR#6898: Update win32 support documentation of the Unix library
+  (Damien Doligez, report by Daniel Bünzli)
+
 - PR#7092, GPR#379: Add missing documentation for new 4.03 features
   (Florian Angeletti)
+
+- PR#7094, GPR#468, GPR#551: add new section 8.5 to document warnings
+  The general idea is to document warnings that may require explanations.
+  Currently documented warnings are:
+  - 52: Fragile constant pattern.
+  - 57: Ambiguous or-pattern variables under guard
+  (Florian Angeletti and Gabriel Scherer)
 
 - PR#7109, GPR#380: Fix bigarray documentation layout
   (Florian Angeletti, Leo White)
 
-Bug fixes:
-==========
+### Bug fixes:
 
 - PR#3612: memory leak in bigarray read from file
   (Pierre Chambart, report by Gary Huber)
@@ -741,7 +783,7 @@ Bug fixes:
 - PR#6805: Duplicated expression in case of hole in a non-failing switch.
   (Luc Maranget)
 
-- PR#6808: the parsing of OCAMLRUNPARAM is too lax
+* PR#6808: the parsing of OCAMLRUNPARAM is too lax
   (Damien Doligez)
 
 - PR#6874: Inefficient code generated for module function arguments
@@ -875,8 +917,14 @@ Bug fixes:
 - PR#7160: Type synonym definitions can weaken gadt constructor types
   (Jacques Garrigue, report by Mikhail Mandrykin)
 
+- PR#7181: Misleading error message with GADTs and polymorphic variants
+  (Jacques Garrigue, report by Pierre Chambart)
+
 - PR#7182: Assertion failure with recursive modules and externals
   (Jacques Garrigue, report by Jeremy Yallop)
+
+- PR#7196: "let open" is not correctly pretty-printed to the left of a ';'
+  (Gabriel Scherer, report by Christophe Raffalli)
 
 - PR#7214: Assertion failure in Env.add_gadt_instances
   (Jacques Garrigue, report by Stephen Dolan)
@@ -886,6 +934,12 @@ Bug fixes:
 
 - PR#7222: Escaped existential type
   (Jacques Garrigue, report by Florian Angeletti)
+
+- PR#7230: Scrutinee discarded in match with only refutation cases
+  (Jacques Garrigue, report by Jeremy Yallop)
+
+- PR#7234: Compatibility check wrong for abstract type constructors
+  (Jacques Garrigue, report by Stephen Dolan)
 
 - GPR#205: Clear caml_backtrace_last_exn before registering as root
   (report and fix by Frederic Bour)
@@ -938,8 +992,7 @@ Bug fixes:
   variant and arrow types
   (Thomas Refis)
 
-Features wishes:
-================
+### Features wishes:
 
 - PR#4518, GPR#29: change location format for reporting errors in ocamldoc
   (Sergei Lebedev)
@@ -1061,14 +1114,15 @@ Features wishes:
   GNU parallel tool to run tests in parallel.
   (Gabriel Scherer)
 
-Build system:
-=============
+- GPR#555: ensure that register typing constraints are respected at
+  join points in the control flow graph
+  (Mark Shinwell, debugging & test case by Arseniy Alekseyev and Leo White,
+    code review by Xavier Leroy)
+
+### Build system:
 
 - GPR#388: FlexDLL added as a Git submodule and bootstrappable with the compiler
   (David Allsopp)
-
-===============================================================================
-===============================================================================
 
 OCaml 4.02.3 (27 Jul 2015):
 ---------------------------

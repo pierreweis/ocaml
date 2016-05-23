@@ -71,7 +71,9 @@ module Options = Main_args.Make_bytetop_options (struct
   let _init s = init_file := Some s
   let _noinit = set noinit
   let _labels = clear classic
+  let _alias_deps = clear transparent_modules
   let _no_alias_deps = set transparent_modules
+  let _app_funct = set applicative_functors
   let _no_app_funct = clear applicative_functors
   let _noassert = set noassert
   let _nolabels = set classic
@@ -95,6 +97,7 @@ module Options = Main_args.Make_bytetop_options (struct
   let _unsafe_string = set unsafe_string
   let _version () = print_version ()
   let _vnum () = print_version_num ()
+  let _no_version = set noversion
   let _w s = Warnings.parse_options false s
   let _warn_error s = Warnings.parse_options true s
   let _warn_help = Warnings.help_warnings
