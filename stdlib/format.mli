@@ -503,7 +503,7 @@ val get_formatter_output_functions :
   all the characters that have to be printed!
 *)
 
-(** {7: Redefining output functions} *)
+(** {7 Redefining output functions} *)
 
 type formatter_out_functions = {
   out_string : string -> int -> int -> unit;
